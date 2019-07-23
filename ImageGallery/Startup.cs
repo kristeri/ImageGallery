@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using ImageGallery.Services;
 
 namespace ImageGallery
 {
@@ -36,6 +37,7 @@ namespace ImageGallery
             services.AddDbContext<ImageGalleryDbContext>(options =>
                 options.UseSqlServer(Configuration
                 .GetConnectionString("DefaultConnection")));
+            services.AddScoped<IImage, ImageService>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
