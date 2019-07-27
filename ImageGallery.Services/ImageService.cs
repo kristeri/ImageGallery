@@ -1,9 +1,12 @@
 ﻿using ImageGallery.Data;
 using ImageGallery.Data.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System;
+using System.Threading.Tasks;
 
 namespace ImageGallery.Services
 {
@@ -32,6 +35,34 @@ namespace ImageGallery.Services
             return GetAll()
                 .Where(image => image.Tags
                 .Any(t => t.Description == tag));
+        }
+
+        public CloudBlobContainer GetBlobContainer(string azureConnectionString, string containerName)
+        {
+            var storageAccount = CloudStorageAccount.Parse(azureConnectionString);
+            var blobClient = storageAccount.CreateCloudBlobClient();
+            return blobClient.GetContainerReference(containerName);
+        }
+
+        public async Task SetImage(string title, string tags, Uri uri)
+        {
+            var image = new GalleryImage
+            {
+                Title = title,
+                Tags = ParseTags(tags),
+                Url = uri.AbsoluteUri,
+                Created = DateTime.Now
+        };
+
+            _context.Add(image);
+            await _context.SaveChangesAsync();
+        }
+
+        public List<ImageTag> ParseTags(string tags)
+        {
+            return tags.Split(",").ToList().Select(tag => new ImageTag {
+                Description = tag
+            }).ToList();
         }
     }
 }
